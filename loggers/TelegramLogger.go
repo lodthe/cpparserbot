@@ -12,16 +12,16 @@ import (
 //TelegramLoggers sends messages to the telegram channel
 //specified by channel id
 type TelegramLogger struct {
-	ChannelChatId int64
-	Controller    *controllers.TelegramController
+	ChannelID  int64
+	Controller *controllers.TelegramController
 }
 
 //Info sends messages with informative context
 func (logger *TelegramLogger) Info(text string) (tgbotapi.Message, error) {
 	return logger.Controller.Send(
-		helpers.PrepareMessageConfigForSending(
+		helpers.PrepareMessageConfig(
 			tgbotapi.NewMessage(
-				logger.ChannelChatId,
+				logger.ChannelID,
 				fmt.Sprintf("*[info]*: %s", text),
 			)))
 }
@@ -29,9 +29,9 @@ func (logger *TelegramLogger) Info(text string) (tgbotapi.Message, error) {
 //Error sends messages about errors
 func (logger *TelegramLogger) Error(text string) (tgbotapi.Message, error) {
 	return logger.Controller.Send(
-		helpers.PrepareMessageConfigForSending(
+		helpers.PrepareMessageConfig(
 			tgbotapi.NewMessage(
-				logger.ChannelChatId,
+				logger.ChannelID,
 				fmt.Sprintf("*[error]*: %s", text),
 			)))
 }

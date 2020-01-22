@@ -19,10 +19,10 @@ func main() {
 	}
 	controller := &controllers.TelegramController{Bot: bot}
 
-	loggingChannelChatId, _ := strconv.ParseInt(os.Getenv("TELEGRAM_CHANNEL_CHAT_ID"), 10, 64)
+	channelID, _ := strconv.ParseInt(os.Getenv("TELEGRAM_CHANNEL_CHAT_ID"), 10, 64)
 	logger := &loggers.TelegramLogger{
-		ChannelChatId: loggingChannelChatId,
-		Controller:    controller,
+		ChannelID:  channelID,
+		Controller: controller,
 	}
 
 	logger.Info("Bot was started")
