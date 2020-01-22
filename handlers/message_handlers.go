@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/lodthe/cpparserbot/api"
+	"github.com/lodthe/cpparserbot/helpers"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 
@@ -15,20 +17,28 @@ import (
 //DispatchMessage identifies type of message and sends response based on this type
 func DispatchMessage(update tgbotapi.Update, controller *controllers.TelegramController, logger *loggers.TelegramLogger) {
 	chatID := update.Message.Chat.ID
+	text := update.Message.Text
 
-	switch update.Message.Text {
-	case "/start":
+	switch true {
+	case update.Message.Text == "/start":
 		logger.Info(fmt.Sprintf("[%v](tg://user?id=%v) sent /start", chatID, chatID))
 		controller.Send(handleStart(update))
 
-	case buttons.Menu.Text:
+	case update.Message.Text == buttons.Menu.Text:
 		controller.Send(handleMenu(update))
 
-	case buttons.GetBinancePricesList.Text:
+	case update.Message.Text == buttons.GetBinancePricesList.Text:
 		controller.Send(handleGetBinancePricesList(update))
 
-	case buttons.GetAllPrices.Text:
+	case update.Message.Text == buttons.GetAllPrices.Text:
 		controller.Send(handleGetAllPrices(update))
+
+	case helpers.FindPairInConfig(text) != nil:
+		logger.Info(fmt.Sprintf("[%v](tg://user?id=%v) asked for %s Binance price", chatID, chatID, text))
+		controller.Send(handleGetBinancePrice(update))
+
+	default:
+		controller.Send(handleUnknownCommand(update))
 	}
 }
 
@@ -36,6 +46,12 @@ func DispatchMessage(update tgbotapi.Update, controller *controllers.TelegramCon
 func handleStart(update tgbotapi.Update) tgbotapi.MessageConfig {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.Start)
 	msg.ReplyMarkup = keyboards.Start()
+	return msg
+}
+
+//handleStart returns unknown command message
+func handleUnknownCommand(update tgbotapi.Update) tgbotapi.MessageConfig {
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.UnknownCommand)
 	return msg
 }
 
@@ -59,5 +75,15 @@ func handleGetBinancePricesList(update tgbotapi.Update) tgbotapi.MessageConfig {
 func handleGetAllPrices(update tgbotapi.Update) tgbotapi.MessageConfig {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.GetAllPrices)
 	msg.ReplyMarkup = keyboards.GetAllPrices()
+	return msg
+}
+
+//handleGetAllPrices return message with .xls document
+//that contains all tickers information
+func handleGetBinancePrice(update tgbotapi.Update) tgbotapi.MessageConfig {
+	pair := *helpers.FindPairInConfig(update.Message.Text)
+	price, _ := api.GetPrice(pair)
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(labels.GetBinancePrice, pair, price))
+	msg.ReplyMarkup = keyboards.GetBinancePrice()
 	return msg
 }

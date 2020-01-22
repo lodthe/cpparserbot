@@ -78,3 +78,15 @@ func GetAllPrices() tgbotapi.ReplyKeyboardMarkup {
 		),
 	)
 }
+
+//GetBinancePrice returns reply keyboard for `GetBinancePrice` message
+func GetBinancePrice() tgbotapi.ReplyKeyboardMarkup {
+	return tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			buttons.Menu,
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			buttons.GetAllPrices,
+		),
+	)
+}

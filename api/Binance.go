@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/lodthe/ratesparser/models"
+	"github.com/lodthe/cpparserbot/models"
 )
 
 const (
@@ -23,7 +23,7 @@ type binanceTicker struct {
 	Price  string
 }
 
-func (exchanger *Binance) GetPrice(pair models.Pair) (float64, error) {
+func GetPrice(pair models.Pair) (float64, error) {
 	query := binanceAPIURL + "ticker/price?symbol=" + pair.SpendCurrency + pair.BuyCurrency
 	response, err := http.Get(query)
 	if err != nil {
