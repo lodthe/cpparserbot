@@ -1,4 +1,4 @@
-package exchangers
+package api
 
 import (
 	"encoding/json"
