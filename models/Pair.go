@@ -1,6 +1,8 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+)
 
 //Pair keeps information about currency pair
 type Pair struct {
