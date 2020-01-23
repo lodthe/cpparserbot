@@ -1,6 +1,6 @@
 package labels
 
-var (
+const (
 	Start = `Привет. Я умею присылать информацию о релевантных курсах на разных биржах!
 `
 	Menu = `Я могу показать курсы валют с Binance или отправить XLS файл с многими курсами.
@@ -11,6 +11,8 @@ var (
 `
 	UnknownCommand = `Неизвестная команда :( Попробуй ещё раз.
 `
-	GetBinancePrice = `%s: %f
+	GetBinancePrice = `Текущая цена %s: %f
+`
+	GetBinancePriceFailed = `Не удалось получить информацию с Binance. Попробуйте позже.
 `
 )

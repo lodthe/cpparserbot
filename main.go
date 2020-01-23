@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/lodthe/cpparserbot/api"
 	"log"
 	"os"
 	"strconv"
@@ -27,6 +28,9 @@ func main() {
 		Controller: controller,
 	}
 
+	binanceAPI := &api.Binance{}
+	binanceAPI.Init(os.Getenv("BINANCE_API_KEY"), os.Getenv("BINANCE_SECRET_KEY"))
+
 	logger.Info("Bot was started")
 
 	u := tgbotapi.NewUpdate(0)
@@ -35,11 +39,7 @@ func main() {
 
 	for update := range updates {
 		if update.Message != nil {
-			handlers.DispatchMessage(update, controller, logger)
-		}
-
-		if update.CallbackQuery != nil {
-			handlers.DispatchCallback(update, controller, logger)
+			handlers.DispatchMessage(update, controller, logger, binanceAPI)
 		}
 	}
 }

@@ -4,7 +4,7 @@ import "github.com/lodthe/cpparserbot/models"
 
 var (
 	BinancePairs = []models.Pair{
-		{"USDT", "BTC"},
+		{"BTC", "USDT"},
 		{"BNB", "BTC"},
 		{"ETH", "BTC"},
 		{"XRP", "BTC"},

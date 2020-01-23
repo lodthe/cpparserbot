@@ -15,7 +15,12 @@ import (
 )
 
 //DispatchMessage identifies type of message and sends response based on this type
-func DispatchMessage(update tgbotapi.Update, controller *controllers.TelegramController, logger *loggers.TelegramLogger) {
+func DispatchMessage(
+	update tgbotapi.Update,
+	controller *controllers.TelegramController,
+	logger *loggers.TelegramLogger,
+	binanceAPI *api.Binance,
+) {
 	chatID := update.Message.Chat.ID
 	text := update.Message.Text
 
@@ -35,7 +40,7 @@ func DispatchMessage(update tgbotapi.Update, controller *controllers.TelegramCon
 
 	case helpers.FindPairInConfig(text) != nil:
 		logger.Info(fmt.Sprintf("[%v](tg://user?id=%v) asked for %s Binance price", chatID, chatID, text))
-		controller.Send(handleGetBinancePrice(update))
+		controller.Send(handleGetBinancePrice(update, binanceAPI))
 
 	default:
 		controller.Send(handleUnknownCommand(update))
@@ -79,9 +84,12 @@ func handleGetAllPrices(update tgbotapi.Update) tgbotapi.MessageConfig {
 
 //handleGetAllPrices return message with .xls document
 //that contains all tickers information
-func handleGetBinancePrice(update tgbotapi.Update) tgbotapi.MessageConfig {
+func handleGetBinancePrice(update tgbotapi.Update, binanceAPI *api.Binance) tgbotapi.MessageConfig {
 	pair := *helpers.FindPairInConfig(update.Message.Text)
-	price, _ := api.GetPrice(pair)
+	price, err := binanceAPI.GetPrice(pair)
+	if err != nil {
+		return tgbotapi.NewMessage(update.Message.Chat.ID, labels.GetBinancePriceFailed)
+	}
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(labels.GetBinancePrice, pair, price))
 	return msg
 }
