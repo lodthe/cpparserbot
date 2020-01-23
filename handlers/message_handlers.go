@@ -74,7 +74,6 @@ func handleGetBinancePricesList(update tgbotapi.Update) tgbotapi.MessageConfig {
 //that contains all tickers information
 func handleGetAllPrices(update tgbotapi.Update) tgbotapi.MessageConfig {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.GetAllPrices)
-	msg.ReplyMarkup = keyboards.GetAllPrices()
 	return msg
 }
 
@@ -84,6 +83,5 @@ func handleGetBinancePrice(update tgbotapi.Update) tgbotapi.MessageConfig {
 	pair := *helpers.FindPairInConfig(update.Message.Text)
 	price, _ := api.GetPrice(pair)
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(labels.GetBinancePrice, pair, price))
-	msg.ReplyMarkup = keyboards.GetBinancePrice()
 	return msg
 }
