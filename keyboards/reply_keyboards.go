@@ -16,6 +16,11 @@ func Start() tgbotapi.ReplyKeyboardMarkup {
 	)
 }
 
+//UnknownCommand returns reply keyboard for `UnknownCommand` message
+func UnknownCommand() tgbotapi.ReplyKeyboardMarkup {
+	return Menu()
+}
+
 //Menu returns reply keyboard for `Menu` message
 func Menu() tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
@@ -26,6 +31,11 @@ func Menu() tgbotapi.ReplyKeyboardMarkup {
 			buttons.GetAllPrices,
 		),
 	)
+}
+
+//GetBinancePrice returns reply keyboard for `GetBinancePrice` message
+func GetBinancePrice() tgbotapi.ReplyKeyboardMarkup {
+	return GetBinancePricesList()
 }
 
 //parseButtonRow returns slice of `KeyboardButtons`, where
@@ -65,4 +75,9 @@ func GetBinancePricesList() tgbotapi.ReplyKeyboardMarkup {
 	))
 
 	return tgbotapi.NewReplyKeyboard(rows...)
+}
+
+//GetAllPrices returns reply keyboard for `GetAllPrices` message
+func GetAllPrices() tgbotapi.ReplyKeyboardMarkup {
+	return Menu()
 }

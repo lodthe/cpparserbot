@@ -12,6 +12,7 @@ import (
 	"github.com/lodthe/cpparserbot/labels"
 	"github.com/lodthe/cpparserbot/loggers"
 	"github.com/wcharczuk/go-chart"
+	"time"
 )
 
 //DispatchMessage identifies type of message and sends response based on this type
@@ -51,12 +52,15 @@ func DispatchMessage(
 func handleStart(update tgbotapi.Update) tgbotapi.Chattable {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.Start)
 	msg.ReplyMarkup = keyboards.Start()
+	helpers.PrepareMessageConfigForGroup(&msg, &update)
 	return msg
 }
 
 //handleStart returns unknown command message
 func handleUnknownCommand(update tgbotapi.Update) tgbotapi.Chattable {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.UnknownCommand)
+	msg.ReplyMarkup = keyboards.UnknownCommand()
+	helpers.PrepareMessageConfigForGroup(&msg, &update)
 	return msg
 }
 
@@ -64,6 +68,7 @@ func handleUnknownCommand(update tgbotapi.Update) tgbotapi.Chattable {
 func handleMenu(update tgbotapi.Update) tgbotapi.Chattable {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.Menu)
 	msg.ReplyMarkup = keyboards.Menu()
+	helpers.PrepareMessageConfigForGroup(&msg, &update)
 	return msg
 }
 
@@ -72,6 +77,7 @@ func handleMenu(update tgbotapi.Update) tgbotapi.Chattable {
 func handleGetBinancePricesList(update tgbotapi.Update) tgbotapi.Chattable {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.GetBinancePricesList)
 	msg.ReplyMarkup = keyboards.GetBinancePricesList()
+	helpers.PrepareMessageConfigForGroup(&msg, &update)
 	return msg
 }
 
@@ -79,6 +85,8 @@ func handleGetBinancePricesList(update tgbotapi.Update) tgbotapi.Chattable {
 //that contains all tickers information
 func handleGetAllPrices(update tgbotapi.Update) tgbotapi.Chattable {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.GetAllPrices)
+	msg.ReplyMarkup = keyboards.GetAllPrices()
+	helpers.PrepareMessageConfigForGroup(&msg, &update)
 	return msg
 }
 
@@ -103,8 +111,24 @@ func handleGetBinancePrice(update tgbotapi.Update, binanceAPI *api.Binance) tgbo
 	}
 
 	graph := chart.Chart{
+		Title: fmt.Sprintf("Изменение цены %s за сутки", pair),
+		XAxis: chart.XAxis{
+			ValueFormatter: func(v interface{}) string {
+				t := time.Unix(int64(v.(float64))/1000, 0)
+				return fmt.Sprintf("%02d:%02d", t.Hour(), t.Minute())
+			},
+		},
+		YAxis: chart.YAxis{
+			ValueFormatter: func(v interface{}) string {
+				return fmt.Sprintf("%.8f", v.(float64))
+			},
+		},
 		Series: []chart.Series{
 			chart.ContinuousSeries{
+				Style: chart.Style{
+					StrokeColor: chart.ColorRed,
+					FillColor:   chart.GetDefaultColor(0).WithAlpha(32),
+				},
 				XValues: x,
 				YValues: y,
 			},
@@ -119,6 +143,10 @@ func handleGetBinancePrice(update tgbotapi.Update, binanceAPI *api.Binance) tgbo
 
 	msg := tgbotapi.NewPhotoUpload(update.Message.Chat.ID, tgbotapi.FileBytes{Name: "Prices", Bytes: buffer.Bytes()})
 	msg.Caption = fmt.Sprintf(labels.GetBinancePrice, pair, price)
+
+	if update.Message.Chat.ID > 0 {
+		msg.ReplyMarkup = keyboards.GetBinancePrice()
+	}
 
 	return msg
 }
