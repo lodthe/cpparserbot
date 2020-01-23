@@ -27,3 +27,34 @@ func (b *Binance) GetPrice(pair models.Pair) (float64, error) {
 	}
 	return strconv.ParseFloat(prices[0].Price, 64)
 }
+
+//Kline holds information about Binance kline record
+type Kline struct {
+	Price     float64
+	Timestamp int64
+}
+
+//GetKlines returns information about how pair price was changing during the day
+func (b *Binance) GetKlines(pair models.Pair) ([]Kline, error) {
+	klines, err := b.client.
+		NewKlinesService().Symbol(pair.ToBinanceFormat()).
+		Interval("1d").
+		Limit(100).
+		Do(context.Background())
+	if err != nil {
+		return make([]Kline, 0), err
+	}
+
+	var result []Kline
+
+	for _, i := range klines {
+		price, err := strconv.ParseFloat(i.Close, 64)
+		if err != nil {
+			return make([]Kline, 0), err
+		}
+
+		result = append(result, Kline{price, i.CloseTime})
+	}
+
+	return result, nil
+}

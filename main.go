@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/lodthe/cpparserbot/api"
 	"log"
 	"os"
 	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 
+	"github.com/lodthe/cpparserbot/api"
 	"github.com/lodthe/cpparserbot/controllers"
 	"github.com/lodthe/cpparserbot/handlers"
 	"github.com/lodthe/cpparserbot/loggers"
@@ -39,7 +39,7 @@ func main() {
 
 	for update := range updates {
 		if update.Message != nil {
-			handlers.DispatchMessage(update, controller, logger, binanceAPI)
+			go handlers.DispatchMessage(update, controller, logger, binanceAPI)
 		}
 	}
 }
