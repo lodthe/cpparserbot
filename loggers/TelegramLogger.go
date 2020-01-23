@@ -17,8 +17,8 @@ type TelegramLogger struct {
 }
 
 //Info sends messages with informative context
-func (logger *TelegramLogger) Info(text string) (tgbotapi.Message, error) {
-	return logger.Controller.Send(
+func (logger *TelegramLogger) Info(text string) {
+	logger.Controller.Send(
 		helpers.PrepareMessageConfig(
 			tgbotapi.NewMessage(
 				logger.ChannelID,
@@ -27,8 +27,8 @@ func (logger *TelegramLogger) Info(text string) (tgbotapi.Message, error) {
 }
 
 //Error sends messages about errors
-func (logger *TelegramLogger) Error(text string) (tgbotapi.Message, error) {
-	return logger.Controller.Send(
+func (logger *TelegramLogger) Error(text string) {
+	logger.Controller.Send(
 		helpers.PrepareMessageConfig(
 			tgbotapi.NewMessage(
 				logger.ChannelID,

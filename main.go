@@ -18,6 +18,8 @@ func main() {
 		log.Panic(err)
 	}
 	controller := &controllers.TelegramController{Bot: bot}
+	controller.Init()
+	controller.Run()
 
 	channelID, _ := strconv.ParseInt(os.Getenv("TELEGRAM_CHANNEL_CHAT_ID"), 10, 64)
 	logger := &loggers.TelegramLogger{
