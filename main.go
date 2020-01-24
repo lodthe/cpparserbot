@@ -39,7 +39,7 @@ func main() {
 
 	for update := range updates {
 		if update.Message != nil {
-			go handlers.DispatchMessage(update, controller, logger, binanceAPI)
+			go handlers.DispatchMessage(&update, controller, logger, binanceAPI)
 		}
 	}
 }

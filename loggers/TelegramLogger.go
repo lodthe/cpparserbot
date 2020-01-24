@@ -18,20 +18,12 @@ type TelegramLogger struct {
 
 //Info sends messages with informative context
 func (logger *TelegramLogger) Info(text string) {
-	logger.Controller.Send(
-		helpers.PrepareMessageConfig(
-			tgbotapi.NewMessage(
-				logger.ChannelID,
-				fmt.Sprintf("*[info]*: %s", text),
-			)))
+	msg := tgbotapi.NewMessage(logger.ChannelID, fmt.Sprintf("*[info]*: %s", text))
+	logger.Controller.Send(helpers.PrepareMessageConfig(&msg))
 }
 
 //Error sends messages about errors
 func (logger *TelegramLogger) Error(text string) {
-	logger.Controller.Send(
-		helpers.PrepareMessageConfig(
-			tgbotapi.NewMessage(
-				logger.ChannelID,
-				fmt.Sprintf("*[error]*: %s", text),
-			)))
+	msg := tgbotapi.NewMessage(logger.ChannelID, fmt.Sprintf("*[error]*: %s", text))
+	logger.Controller.Send(helpers.PrepareMessageConfig(&msg))
 }

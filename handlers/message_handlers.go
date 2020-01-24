@@ -6,42 +6,55 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/lodthe/cpparserbot/api"
 	"github.com/lodthe/cpparserbot/buttons"
+	"github.com/lodthe/cpparserbot/configs"
 	"github.com/lodthe/cpparserbot/controllers"
 	"github.com/lodthe/cpparserbot/helpers"
 	"github.com/lodthe/cpparserbot/keyboards"
 	"github.com/lodthe/cpparserbot/labels"
 	"github.com/lodthe/cpparserbot/loggers"
+	"github.com/lodthe/cpparserbot/models"
 	"github.com/wcharczuk/go-chart"
+	"strings"
 	"time"
 )
 
 //DispatchMessage identifies type of message and sends response based on this type
 func DispatchMessage(
-	update tgbotapi.Update,
+	update *tgbotapi.Update,
 	controller *controllers.TelegramController,
 	logger *loggers.TelegramLogger,
 	binanceAPI *api.Binance,
 ) {
 	chatID := update.Message.Chat.ID
-	text := update.Message.Text
+	text := strings.TrimSpace(update.Message.Text)
 
 	switch true {
-	case update.Message.Text == "/start":
+	case strings.HasPrefix(text, "/start"):
 		logger.Info(fmt.Sprintf("[%v](tg://user?id=%v) sent /start", chatID, chatID))
 		controller.Send(handleStart(update))
 
-	case update.Message.Text == buttons.Menu.Text:
+	case strings.HasPrefix(text, buttons.Menu.Text):
 		controller.Send(handleMenu(update))
 
-	case update.Message.Text == buttons.GetBinancePricesList.Text:
+	case strings.HasPrefix(text, buttons.GetBinancePricesList.Text):
 		controller.Send(handleGetBinancePricesList(update))
 
-	case update.Message.Text == buttons.GetAllPrices.Text:
+	case strings.HasPrefix(text, buttons.GetAllPrices.Text) || strings.HasPrefix(text, labels.GetAllCommand):
 		controller.Send(handleGetAllPrices(update))
 
 	case helpers.FindPairInConfig(text) != nil:
 		logger.Info(fmt.Sprintf("[%v](tg://user?id=%v) asked for %s Binance price", chatID, chatID, text))
-		controller.Send(handleGetBinancePrice(update, binanceAPI))
+		controller.Send(handleGetBinancePrice(*helpers.FindPairInConfig(text), update, binanceAPI))
+
+	case strings.HasPrefix(text, labels.GetCommand+" "):
+		logger.Info(fmt.Sprintf("[%v](tg://user?id=%v) asked for %s Binance price", chatID, chatID, text))
+		controller.Send(handleCommandGetBinancePrice(update, binanceAPI))
+
+	case strings.HasPrefix(text, labels.GetCommand):
+		controller.Send(handleGetCorrection(update))
+
+	case strings.HasPrefix(text, labels.GetListCommand):
+		controller.Send(handleGetListCommand(update))
 
 	default:
 		controller.Send(handleUnknownCommand(update))
@@ -49,51 +62,72 @@ func DispatchMessage(
 }
 
 //handleStart returns start message
-func handleStart(update tgbotapi.Update) tgbotapi.Chattable {
+func handleStart(update *tgbotapi.Update) tgbotapi.Chattable {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.Start)
 	msg.ReplyMarkup = keyboards.Start()
-	helpers.PrepareMessageConfigForGroup(&msg, &update)
+	helpers.PrepareMessageConfig(&msg)
 	return msg
 }
 
 //handleStart returns unknown command message
-func handleUnknownCommand(update tgbotapi.Update) tgbotapi.Chattable {
+func handleUnknownCommand(update *tgbotapi.Update) tgbotapi.Chattable {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.UnknownCommand)
 	msg.ReplyMarkup = keyboards.UnknownCommand()
-	helpers.PrepareMessageConfigForGroup(&msg, &update)
+	helpers.PrepareMessageConfig(&msg)
 	return msg
 }
 
 //handleMenu returns menu message
-func handleMenu(update tgbotapi.Update) tgbotapi.Chattable {
+func handleMenu(update *tgbotapi.Update) tgbotapi.Chattable {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.Menu)
 	msg.ReplyMarkup = keyboards.Menu()
-	helpers.PrepareMessageConfigForGroup(&msg, &update)
+	helpers.PrepareMessageConfig(&msg)
 	return msg
 }
 
 //handleGetBinancePricesList returns message with keyboard
 //that consists of available Binance tickers
-func handleGetBinancePricesList(update tgbotapi.Update) tgbotapi.Chattable {
+func handleGetBinancePricesList(update *tgbotapi.Update) tgbotapi.Chattable {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.GetBinancePricesList)
 	msg.ReplyMarkup = keyboards.GetBinancePricesList()
-	helpers.PrepareMessageConfigForGroup(&msg, &update)
+	helpers.PrepareMessageConfig(&msg)
+	return msg
+}
+
+//handleGetListCommand returns message with list
+//made up of supported Binance pairs
+func handleGetListCommand(update *tgbotapi.Update) tgbotapi.Chattable {
+	text := labels.GetList
+
+	for _, i := range configs.BinancePairs {
+		text += i.String() + "\n"
+	}
+
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+	helpers.PrepareMessageConfig(&msg)
+	return msg
+}
+
+//handleGetCorrection asks user to add information
+//about pair to the /get command
+func handleGetCorrection(update *tgbotapi.Update) tgbotapi.Chattable {
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.GetCorrection)
+	helpers.PrepareMessageConfig(&msg)
 	return msg
 }
 
 //handleGetAllPrices return message with .xls document
 //that contains all tickers information
-func handleGetAllPrices(update tgbotapi.Update) tgbotapi.Chattable {
+func handleGetAllPrices(update *tgbotapi.Update) tgbotapi.Chattable {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, labels.GetAllPrices)
 	msg.ReplyMarkup = keyboards.GetAllPrices()
-	helpers.PrepareMessageConfigForGroup(&msg, &update)
+	helpers.PrepareMessageConfig(&msg)
 	return msg
 }
 
-//handleGetBinancePrice return message with Binance pair price
+//handleGetBinancePrice returns message with Binance pair price
 //and a graph (which shows how price was changing during the day)
-func handleGetBinancePrice(update tgbotapi.Update, binanceAPI *api.Binance) tgbotapi.Chattable {
-	pair := *helpers.FindPairInConfig(update.Message.Text)
+func handleGetBinancePrice(pair models.Pair, update *tgbotapi.Update, binanceAPI *api.Binance) tgbotapi.Chattable {
 	price, err := binanceAPI.GetPrice(pair)
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, labels.GetBinancePriceFailed)
@@ -144,10 +178,21 @@ func handleGetBinancePrice(update tgbotapi.Update, binanceAPI *api.Binance) tgbo
 
 	msg := tgbotapi.NewPhotoUpload(update.Message.Chat.ID, tgbotapi.FileBytes{Name: "Prices", Bytes: buffer.Bytes()})
 	msg.Caption = fmt.Sprintf(labels.GetBinancePrice, pair, price)
-
-	if update.Message.Chat.ID > 0 {
-		msg.ReplyMarkup = keyboards.GetBinancePrice()
-	}
+	msg.ReplyMarkup = keyboards.GetBinancePrice()
+	helpers.PreparePhotoConfig(&msg)
 
 	return msg
+}
+
+//handleCommandGetBinancePrice returns message with Binance pair price
+//and a graph (which shows how price was changing during the day)
+func handleCommandGetBinancePrice(update *tgbotapi.Update, binanceAPI *api.Binance) tgbotapi.Chattable {
+	//Trimming text and removing `get` command prefix
+	pairName := strings.TrimSpace(update.Message.Text)[len(labels.GetCommand)+1:]
+	pair := helpers.FindPairInConfig(pairName)
+	if pair == nil {
+		return tgbotapi.NewMessage(update.Message.Chat.ID, labels.UnknownPair)
+	}
+
+	return handleGetBinancePrice(*pair, update, binanceAPI)
 }
