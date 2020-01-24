@@ -43,15 +43,13 @@ func DispatchMessage(
 		controller.Send(handleGetAllPrices(update))
 
 	case helpers.FindPairInConfig(text) != nil:
-		logger.Info(fmt.Sprintf("[%v](tg://user?id=%v) asked for %s Binance price", chatID, chatID, text))
-		controller.Send(handleGetBinancePrice(*helpers.FindPairInConfig(text), update, binanceAPI))
+		controller.Send(handleGetBinancePrice(*helpers.FindPairInConfig(text), update, binanceAPI, logger))
 
 	case strings.HasPrefix(text, labels.GetListCommand):
 		controller.Send(handleGetListCommand(update))
 
 	case strings.HasPrefix(text, labels.GetCommand+" "):
-		logger.Info(fmt.Sprintf("[%v](tg://user?id=%v) asked for %s Binance price", chatID, chatID, text))
-		controller.Send(handleCommandGetBinancePrice(update, binanceAPI))
+		controller.Send(handleCommandGetBinancePrice(update, binanceAPI, logger))
 
 	case strings.HasPrefix(text, labels.GetCommand):
 		controller.Send(handleGetCorrection(update))
@@ -127,7 +125,10 @@ func handleGetAllPrices(update *tgbotapi.Update) tgbotapi.Chattable {
 
 //handleGetBinancePrice returns message with Binance pair price
 //and a graph (which shows how price was changing during the day)
-func handleGetBinancePrice(pair models.Pair, update *tgbotapi.Update, binanceAPI *api.Binance) tgbotapi.Chattable {
+func handleGetBinancePrice(pair models.Pair, update *tgbotapi.Update, binanceAPI *api.Binance, logger *loggers.TelegramLogger) tgbotapi.Chattable {
+	chatID := update.Message.Chat.ID
+	logger.Info(fmt.Sprintf("[%v](tg://user?id=%v) asked for %s Binance price", chatID, chatID, pair))
+
 	price, err := binanceAPI.GetPrice(pair)
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, labels.GetBinancePriceFailed)
@@ -186,7 +187,7 @@ func handleGetBinancePrice(pair models.Pair, update *tgbotapi.Update, binanceAPI
 
 //handleCommandGetBinancePrice returns message with Binance pair price
 //and a graph (which shows how price was changing during the day)
-func handleCommandGetBinancePrice(update *tgbotapi.Update, binanceAPI *api.Binance) tgbotapi.Chattable {
+func handleCommandGetBinancePrice(update *tgbotapi.Update, binanceAPI *api.Binance, logger *loggers.TelegramLogger) tgbotapi.Chattable {
 	//Trimming text and removing `get` command prefix
 	pairName := strings.TrimSpace(update.Message.Text)[len(labels.GetCommand)+1:]
 	pair := helpers.FindPairInConfig(pairName)
@@ -194,5 +195,5 @@ func handleCommandGetBinancePrice(update *tgbotapi.Update, binanceAPI *api.Binan
 		return tgbotapi.NewMessage(update.Message.Chat.ID, labels.UnknownPair)
 	}
 
-	return handleGetBinancePrice(*pair, update, binanceAPI)
+	return handleGetBinancePrice(*pair, update, binanceAPI, logger)
 }

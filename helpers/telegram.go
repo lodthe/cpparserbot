@@ -10,7 +10,7 @@ func PrepareMessageConfig(config *tgbotapi.MessageConfig) *tgbotapi.MessageConfi
 	config.DisableWebPagePreview = true
 
 	if config.ChatID < 0 {
-		config.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
+		config.ReplyMarkup = nil
 	}
 
 	return config
