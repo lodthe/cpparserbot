@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-
 	"github.com/lodthe/cpparserbot/api"
 	"github.com/lodthe/cpparserbot/controllers"
 	"github.com/lodthe/cpparserbot/handlers"
@@ -18,6 +17,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	controller := &controllers.TelegramController{Bot: bot}
 	controller.Init()
 	controller.Run()
@@ -31,6 +31,8 @@ func main() {
 	binanceAPI := &api.Binance{}
 	binanceAPI.Init(os.Getenv("BINANCE_API_KEY"), os.Getenv("BINANCE_SECRET_KEY"))
 
+	messageDispatcher := handlers.NewMessageDispatcher(controller, logger, binanceAPI)
+
 	logger.Info("Bot was started")
 
 	u := tgbotapi.NewUpdate(0)
@@ -39,7 +41,7 @@ func main() {
 
 	for update := range updates {
 		if update.Message != nil {
-			go handlers.DispatchMessage(&update, controller, logger, binanceAPI)
+			go messageDispatcher.Dispatch(&update)
 		}
 	}
 }

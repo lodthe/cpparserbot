@@ -22,7 +22,7 @@ func (b *Binance) Init(apiKey, secretKey string) {
 }
 
 //GetPrice returns Binance price for given pair
-func (b *Binance) GetPrice(pair models.Pair) (float64, error) {
+func (b *Binance) GetPrice(pair *models.Pair) (float64, error) {
 	prices, err := b.client.NewListPricesService().Symbol(pair.ToBinanceFormat()).Do(context.Background())
 	if err != nil {
 		log.Fatalln(err)
@@ -38,7 +38,7 @@ type Kline struct {
 }
 
 //GetKlines returns information about how pair price was changing during the day
-func (b *Binance) GetKlines(pair models.Pair) ([]Kline, error) {
+func (b *Binance) GetKlines(pair *models.Pair) ([]Kline, error) {
 	klines, err := b.client.
 		NewKlinesService().Symbol(pair.ToBinanceFormat()).
 		Interval("1h").

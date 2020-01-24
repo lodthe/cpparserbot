@@ -35,7 +35,7 @@ func Menu() tgbotapi.ReplyKeyboardMarkup {
 
 //GetBinancePrice returns reply keyboard for `GetBinancePrice` message
 func GetBinancePrice() tgbotapi.ReplyKeyboardMarkup {
-	return GetBinancePricesList()
+	return GetBinancePairsList()
 }
 
 //parseButtonRow returns slice of `KeyboardButtons`, where
@@ -58,8 +58,8 @@ func min(a int, b int) int {
 	return b
 }
 
-//GetBinancePricesList returns reply keyboard for `GetBinancePricesList` message
-func GetBinancePricesList() tgbotapi.ReplyKeyboardMarkup {
+//GetBinancePairsList returns reply keyboard for `GetBinancePairsList` message
+func GetBinancePairsList() tgbotapi.ReplyKeyboardMarkup {
 	var rows [][]tgbotapi.KeyboardButton
 	rows = append(rows, tgbotapi.NewKeyboardButtonRow(
 		buttons.Menu,

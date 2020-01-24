@@ -1,6 +1,9 @@
 package helpers
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+import (
+	"fmt"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+)
 
 //PrepareMessageConfigForGroup disables web page preview,
 //sets parse mode to Markdown and removes keyboards
@@ -27,4 +30,29 @@ func PreparePhotoConfig(config *tgbotapi.PhotoConfig) *tgbotapi.PhotoConfig {
 	}
 
 	return config
+}
+
+//GetChatID tries to get chat ID from update object
+func GetChatID(update *tgbotapi.Update) int64 {
+	switch true {
+	case update.Message != nil:
+		return update.Message.Chat.ID
+	case update.CallbackQuery != nil:
+		return update.CallbackQuery.Message.Chat.ID
+	default:
+		return 0
+	}
+}
+
+//GetTelegramProfileURL parses update owner and for user chats
+//create URL to their profiles
+//P.S. Chat ID > 0 for user chats
+func GetTelegramProfileURL(update *tgbotapi.Update) string {
+	ID := GetChatID(update)
+	if ID < 0 {
+		return fmt.Sprintf("%d", ID)
+	} else {
+		return fmt.Sprintf("[%v](tg://user?id=%v)", ID, ID)
+	}
+
 }
