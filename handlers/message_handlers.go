@@ -137,6 +137,7 @@ func handleGetBinancePrice(update tgbotapi.Update, binanceAPI *api.Binance) tgbo
 
 	buffer := bytes.NewBuffer([]byte{})
 	err = graph.Render(chart.PNG, buffer)
+
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, labels.GetBinancePriceFailed)
 	}
