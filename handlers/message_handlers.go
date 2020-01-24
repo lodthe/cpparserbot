@@ -46,15 +46,15 @@ func DispatchMessage(
 		logger.Info(fmt.Sprintf("[%v](tg://user?id=%v) asked for %s Binance price", chatID, chatID, text))
 		controller.Send(handleGetBinancePrice(*helpers.FindPairInConfig(text), update, binanceAPI))
 
+	case strings.HasPrefix(text, labels.GetListCommand):
+		controller.Send(handleGetListCommand(update))
+
 	case strings.HasPrefix(text, labels.GetCommand+" "):
 		logger.Info(fmt.Sprintf("[%v](tg://user?id=%v) asked for %s Binance price", chatID, chatID, text))
 		controller.Send(handleCommandGetBinancePrice(update, binanceAPI))
 
 	case strings.HasPrefix(text, labels.GetCommand):
 		controller.Send(handleGetCorrection(update))
-
-	case strings.HasPrefix(text, labels.GetListCommand):
-		controller.Send(handleGetListCommand(update))
 
 	default:
 		controller.Send(handleUnknownCommand(update))
