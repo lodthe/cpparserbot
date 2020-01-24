@@ -1,4 +1,5 @@
-package controllers
+// Package controller implements controllers such as TelegramController that manages message sending
+package controller
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -7,30 +8,30 @@ import (
 
 const maxMessagesCountPerSecond = 25
 
-//TelegramController controls request sending to
-//prevent against exceeding Telegram limits
+// TelegramController controls request sending to
+// prevent against exceeding Telegram limits
 type TelegramController struct {
 	Bot          *tgbotapi.BotAPI
 	messages     chan tgbotapi.Chattable
 	sentMessages []time.Time
 }
 
-//Init initializes controller:
-//(*) sets messages channel buffer size
+// Init initializes controller:
+//  sets messages channel buffer size
 func (controller *TelegramController) Init() {
 	controller.messages = make(chan tgbotapi.Chattable, maxMessagesCountPerSecond*2)
 }
 
-//Send pushes message to the channel with messages,
-//which will be send in the future (Run controls this)
+// Send pushes message to the channel with messages,
+// which will be send in the future (Run controls this)
 func (controller *TelegramController) Send(msg tgbotapi.Chattable) {
 	go func() {
 		controller.messages <- msg
 	}()
 }
 
-//Run starts sending messages to telegram and controls limits:
-//no more then `maxMessagesCountPerSecond`
+// Run starts sending messages to telegram and controls limits:
+// no more then `maxMessagesCountPerSecond`
 func (controller *TelegramController) Run() {
 	go func(controller *TelegramController) {
 		for {

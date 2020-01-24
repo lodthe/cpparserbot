@@ -1,4 +1,4 @@
-package labels
+package label
 
 const (
 	CommandList = `Список доступных команд:

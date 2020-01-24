@@ -1,4 +1,5 @@
-package buttons
+// Package button keeps keyboard buttons
+package button
 
 import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 

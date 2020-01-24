@@ -1,3 +1,4 @@
+// Package main runs bot and additional things like logger, controller
 package main
 
 import (
@@ -7,9 +8,9 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/lodthe/cpparserbot/api"
-	"github.com/lodthe/cpparserbot/controllers"
+	"github.com/lodthe/cpparserbot/controller"
 	"github.com/lodthe/cpparserbot/handlers"
-	"github.com/lodthe/cpparserbot/loggers"
+	"github.com/lodthe/cpparserbot/logger"
 )
 
 func main() {
@@ -18,12 +19,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	controller := &controllers.TelegramController{Bot: bot}
+	controller := &controller.TelegramController{Bot: bot}
 	controller.Init()
 	controller.Run()
 
 	channelID, _ := strconv.ParseInt(os.Getenv("TELEGRAM_CHANNEL_CHAT_ID"), 10, 64)
-	logger := &loggers.TelegramLogger{
+	logger := &logger.TelegramLogger{
 		ChannelID:  channelID,
 		Controller: controller,
 	}

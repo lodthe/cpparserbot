@@ -1,46 +1,47 @@
-package keyboards
+// Package keyboard implements Telegram keyboards
+package keyboard
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/lodthe/cpparserbot/buttons"
-	"github.com/lodthe/cpparserbot/configs"
-	"github.com/lodthe/cpparserbot/models"
+	"github.com/lodthe/cpparserbot/button"
+	"github.com/lodthe/cpparserbot/config"
+	"github.com/lodthe/cpparserbot/model"
 )
 
-//Start returns reply keyboard for `Start` message
+// Start returns reply keyboard for `Start` message
 func Start() tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
-			buttons.Menu,
+			button.Menu,
 		),
 	)
 }
 
-//UnknownCommand returns reply keyboard for `UnknownCommand` message
+// UnknownCommand returns reply keyboard for `UnknownCommand` message
 func UnknownCommand() tgbotapi.ReplyKeyboardMarkup {
 	return Menu()
 }
 
-//Menu returns reply keyboard for `Menu` message
+// Menu returns reply keyboard for `Menu` message
 func Menu() tgbotapi.ReplyKeyboardMarkup {
 	return tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
-			buttons.GetBinancePricesList,
+			button.GetBinancePricesList,
 		),
 		tgbotapi.NewKeyboardButtonRow(
-			buttons.GetAllPrices,
+			button.GetAllPrices,
 		),
 	)
 }
 
-//GetBinancePrice returns reply keyboard for `GetBinancePrice` message
+// GetBinancePrice returns reply keyboard for `GetBinancePrice` message
 func GetBinancePrice() tgbotapi.ReplyKeyboardMarkup {
 	return GetBinancePairsList()
 }
 
-//parseButtonRow returns slice of `KeyboardButtons`, where
-//buttons labels equal to pairs representation
-func parseButtonRow(pairs []models.Pair) []tgbotapi.KeyboardButton {
+// parseButtonRow returns slice of `KeyboardButtons`, where
+// button label equal to pairs representation
+func parseButtonRow(pairs []model.Pair) []tgbotapi.KeyboardButton {
 	result := make([]tgbotapi.KeyboardButton, len(pairs))
 
 	for _, pair := range pairs {
@@ -50,7 +51,7 @@ func parseButtonRow(pairs []models.Pair) []tgbotapi.KeyboardButton {
 	return result
 }
 
-//min returns minimum from `a` and `b`
+// min returns low for `a` and `b`
 func min(a int, b int) int {
 	if a <= b {
 		return a
@@ -58,26 +59,26 @@ func min(a int, b int) int {
 	return b
 }
 
-//GetBinancePairsList returns reply keyboard for `GetBinancePairsList` message
+// GetBinancePairsList returns reply keyboard for `GetBinancePairsList` message
 func GetBinancePairsList() tgbotapi.ReplyKeyboardMarkup {
 	var rows [][]tgbotapi.KeyboardButton
 	rows = append(rows, tgbotapi.NewKeyboardButtonRow(
-		buttons.Menu,
+		button.Menu,
 	))
 
-	for i := 0; i < len(configs.BinancePairs); i += 2 {
-		row := parseButtonRow(configs.BinancePairs[i:min(i+2, len(configs.BinancePairs))])
+	for i := 0; i < len(config.BinancePairs); i += 2 {
+		row := parseButtonRow(config.BinancePairs[i:min(i+2, len(config.BinancePairs))])
 		rows = append(rows, row)
 	}
 
 	rows = append(rows, tgbotapi.NewKeyboardButtonRow(
-		buttons.GetAllPrices,
+		button.GetAllPrices,
 	))
 
 	return tgbotapi.NewReplyKeyboard(rows...)
 }
 
-//GetAllPrices returns reply keyboard for `GetAllPrices` message
+// GetAllPrices returns reply keyboard for `GetAllPrices` message
 func GetAllPrices() tgbotapi.ReplyKeyboardMarkup {
 	return Menu()
 }
