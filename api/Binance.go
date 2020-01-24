@@ -40,8 +40,7 @@ func (b *Binance) GetKlines(pair models.Pair) ([]Kline, error) {
 	klines, err := b.client.
 		NewKlinesService().Symbol(pair.ToBinanceFormat()).
 		Interval("1h").
-		StartTime(int64(1000) * (time.Now().Add(-time.Hour * 25).Unix())).
-		EndTime(int64(1000) * (time.Now().Add(-time.Hour).Unix())).
+		StartTime(int64(1000) * (time.Now().Add(-time.Hour * 24).Unix())).
 		Do(context.Background())
 	if err != nil {
 		return make([]Kline, 0), err
