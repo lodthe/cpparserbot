@@ -32,6 +32,11 @@ func (b *Binance) GetPrice(pair *model.Pair) (float64, error) {
 	return strconv.ParseFloat(prices[0].Price, 64)
 }
 
+// GetAllPrices returns data with Binance prices for all pairs
+func (b *Binance) GetAllPrices() ([]*binance.SymbolPrice, error) {
+	return b.client.NewListPricesService().Do(context.Background())
+}
+
 // Kline holds information about Binance kline record
 type Kline struct {
 	Price     float64

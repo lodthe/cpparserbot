@@ -2,6 +2,7 @@ package helper
 
 import (
 	"fmt"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -11,11 +12,9 @@ import (
 func PrepareMessageConfig(config *tgbotapi.MessageConfig) *tgbotapi.MessageConfig {
 	config.ParseMode = tgbotapi.ModeMarkdown
 	config.DisableWebPagePreview = true
-
 	if config.ChatID < 0 {
 		config.ReplyMarkup = nil
 	}
-
 	return config
 }
 
@@ -24,11 +23,20 @@ func PrepareMessageConfig(config *tgbotapi.MessageConfig) *tgbotapi.MessageConfi
 // in group chats
 func PreparePhotoConfig(config *tgbotapi.PhotoConfig) *tgbotapi.PhotoConfig {
 	config.ParseMode = tgbotapi.ModeMarkdown
-
 	if config.ChatID < 0 {
 		config.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
 	}
+	return config
+}
 
+// PrepareDocumentConfig disables web page preview,
+// sets parse mode to Markdown and removes keyboard
+// in group chats
+func PrepareDocumentConfig(config *tgbotapi.DocumentConfig) *tgbotapi.DocumentConfig {
+	config.ParseMode = tgbotapi.ModeMarkdown
+	if config.ChatID < 0 {
+		config.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
+	}
 	return config
 }
 
