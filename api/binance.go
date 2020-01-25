@@ -3,7 +3,6 @@ package api
 
 import (
 	"context"
-	"log"
 	"strconv"
 	"time"
 
@@ -26,7 +25,6 @@ func (b *Binance) Init(apiKey, secretKey string) {
 func (b *Binance) GetPrice(pair *model.Pair) (float64, error) {
 	prices, err := b.client.NewListPricesService().Symbol(pair.ToBinanceFormat()).Do(context.Background())
 	if err != nil {
-		log.Fatalln(err)
 		return 0, err
 	}
 	return strconv.ParseFloat(prices[0].Price, 64)
@@ -51,7 +49,6 @@ func (b *Binance) GetKlines(pair *model.Pair) ([]Kline, error) {
 		StartTime(int64(1000) * (time.Now().Add(-time.Hour * 24).Unix())).
 		Do(context.Background())
 	if err != nil {
-		log.Fatalln(err)
 		return make([]Kline, 0), err
 	}
 
@@ -60,7 +57,6 @@ func (b *Binance) GetKlines(pair *model.Pair) ([]Kline, error) {
 	for _, i := range klines {
 		price, err := strconv.ParseFloat(i.Close, 64)
 		if err != nil {
-			log.Fatalln(err)
 			return make([]Kline, 0), err
 		}
 

@@ -2,41 +2,41 @@ package helper
 
 import (
 	"fmt"
+	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-// PrepareMessageConfigForGroup disables web page preview,
+// PrepareMessage disables web page preview,
 // sets parse mode to Markdown and removes keyboard
 // in group chats
-func PrepareMessageConfig(config *tgbotapi.MessageConfig) *tgbotapi.MessageConfig {
-	config.ParseMode = tgbotapi.ModeMarkdown
-	config.DisableWebPagePreview = true
-	if config.ChatID < 0 {
-		config.ReplyMarkup = nil
-	}
-	return config
-}
+func PrepareMessage(config tgbotapi.Chattable) tgbotapi.Chattable {
+	switch config.(type) {
+	case *tgbotapi.MessageConfig:
+		message := config.(*tgbotapi.MessageConfig)
+		message.ParseMode = tgbotapi.ModeMarkdown
+		message.DisableWebPagePreview = true
+		if message.ChatID < 0 {
+			message.ReplyMarkup = nil
+		}
 
-// PreparePhotoConfig disables web page preview,
-// sets parse mode to Markdown and removes keyboard
-// in group chats
-func PreparePhotoConfig(config *tgbotapi.PhotoConfig) *tgbotapi.PhotoConfig {
-	config.ParseMode = tgbotapi.ModeMarkdown
-	if config.ChatID < 0 {
-		config.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
-	}
-	return config
-}
+	case *tgbotapi.PhotoConfig:
+		photo := config.(*tgbotapi.PhotoConfig)
+		photo.ParseMode = tgbotapi.ModeMarkdown
+		if photo.ChatID < 0 {
+			photo.ReplyMarkup = nil
+		}
 
-// PrepareDocumentConfig disables web page preview,
-// sets parse mode to Markdown and removes keyboard
-// in group chats
-func PrepareDocumentConfig(config *tgbotapi.DocumentConfig) *tgbotapi.DocumentConfig {
-	config.ParseMode = tgbotapi.ModeMarkdown
-	if config.ChatID < 0 {
-		config.ReplyMarkup = tgbotapi.NewRemoveKeyboard(false)
+	case *tgbotapi.DocumentConfig:
+		document := config.(*tgbotapi.DocumentConfig)
+		document.ParseMode = tgbotapi.ModeMarkdown
+		if document.ChatID < 0 {
+			document.ReplyMarkup = nil
+		}
+	default:
+		log.Fatalf("Cannot recognize Config type: %T", config)
 	}
+
 	return config
 }
 
@@ -62,5 +62,4 @@ func GetTelegramProfileURL(update *tgbotapi.Update) string {
 	} else {
 		return fmt.Sprintf("[%v](tg://user?id=%v)", ID, ID)
 	}
-
 }

@@ -24,14 +24,14 @@ import (
 
 // MessageDispatcher holds additional fields for handling messages
 type MessageDispatcher struct {
-	controller *controller.TelegramController
+	controller controller.Controller
 	logger     *logger.TelegramLogger
 	binance    *api.Binance
 }
 
 // NewMessageDispatcher creates new MessageDispatcher
 func NewMessageDispatcher(
-	controller *controller.TelegramController,
+	controller controller.Controller,
 	logger *logger.TelegramLogger,
 	binance *api.Binance,
 ) *MessageDispatcher {
@@ -86,8 +86,8 @@ func (d *MessageDispatcher) handleStart(update *tgbotapi.Update) tgbotapi.Chatta
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, label.Start)
 	msg.ReplyMarkup = keyboard.Start()
-	helper.PrepareMessageConfig(&msg)
-	return msg
+	helper.PrepareMessage(&msg)
+	return &msg
 }
 
 // handleUnknownCommand returns unknown command message
@@ -96,8 +96,8 @@ func (d *MessageDispatcher) handleUnknownCommand(update *tgbotapi.Update) tgbota
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, label.UnknownCommand)
 	msg.ReplyMarkup = keyboard.UnknownCommand()
-	helper.PrepareMessageConfig(&msg)
-	return msg
+	helper.PrepareMessage(&msg)
+	return &msg
 }
 
 // handleMenu returns menu message
@@ -106,8 +106,8 @@ func (d *MessageDispatcher) handleMenu(update *tgbotapi.Update) tgbotapi.Chattab
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, label.Menu)
 	msg.ReplyMarkup = keyboard.Menu()
-	helper.PrepareMessageConfig(&msg)
-	return msg
+	helper.PrepareMessage(&msg)
+	return &msg
 }
 
 // handleGetBinancePricesList returns message made of
@@ -117,8 +117,8 @@ func (d *MessageDispatcher) handleGetBinancePairsList(update *tgbotapi.Update) t
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, label.GetBinancePairsList)
 	msg.ReplyMarkup = keyboard.GetBinancePairsList()
-	helper.PrepareMessageConfig(&msg)
-	return msg
+	helper.PrepareMessage(&msg)
+	return &msg
 }
 
 // handleGetListCommand returns message made of
@@ -133,8 +133,8 @@ func (d *MessageDispatcher) handleGetListCommand(update *tgbotapi.Update) tgbota
 	}
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
-	helper.PrepareMessageConfig(&msg)
-	return msg
+	helper.PrepareMessage(&msg)
+	return &msg
 }
 
 // handleGetCorrection asks user to add information
@@ -143,8 +143,8 @@ func (d *MessageDispatcher) handleGetCorrection(update *tgbotapi.Update) tgbotap
 	d.logger.Info(fmt.Sprintf("%s sent /get command without pair", helper.GetTelegramProfileURL(update)))
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, label.GetCorrection)
-	helper.PrepareMessageConfig(&msg)
-	return msg
+	helper.PrepareMessage(&msg)
+	return &msg
 }
 
 // handleGetAllPrices return message with .xls document
@@ -181,13 +181,14 @@ func (d *MessageDispatcher) handleGetAllPrices(update *tgbotapi.Update) tgbotapi
 	}
 
 	msg := tgbotapi.NewDocumentUpload(update.Message.Chat.ID, tgbotapi.FileBytes{Name: "Prices.xlsx", Bytes: buffer.Bytes()})
+	msg.FileSize = len(buffer.Bytes())
 	msg.Caption = label.GetAllPrices
 	msg.ReplyMarkup = keyboard.GetAllPrices()
-	helper.PrepareDocumentConfig(&msg)
+	helper.PrepareMessage(&msg)
 
 	d.logger.Info(fmt.Sprintf("Sending message with all prices to %s", helper.GetTelegramProfileURL(update)))
 
-	return msg
+	return &msg
 }
 
 // handleGetBinancePrice returns message with Binance pair price
@@ -249,17 +250,17 @@ func (d *MessageDispatcher) handleGetBinancePrice(pair *model.Pair, update *tgbo
 	msg := tgbotapi.NewPhotoUpload(update.Message.Chat.ID, tgbotapi.FileBytes{Name: "Prices.png", Bytes: buffer.Bytes()})
 	msg.Caption = fmt.Sprintf(label.GetBinancePrice, pair, price)
 	msg.ReplyMarkup = keyboard.GetBinancePrice()
-	helper.PreparePhotoConfig(&msg)
+	helper.PrepareMessage(&msg)
 
 	d.logger.Info(fmt.Sprintf("Sending message with %f price for %s to %s", price, pair, profileRepr))
 
-	return msg
+	return &msg
 }
 
 // handleCommandGetBinancePrice returns message with Binance pair price
 // and a graph (which shows how price was changing during the day)
 func (d *MessageDispatcher) handleCommandGetBinancePrice(update *tgbotapi.Update) tgbotapi.Chattable {
-	//Trimming text and removing `get` command prefix
+	// Trimming text and removing `get` command prefix
 	pairName := strings.TrimSpace(update.Message.Text)[len(label.GetCommand)+1:]
 	pair := helper.FindPairInConfig(pairName)
 	if pair == nil {

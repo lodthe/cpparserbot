@@ -2,16 +2,29 @@
 package controller
 
 import (
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"time"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-const maxMessagesCountPerSecond = 25
+const maxMessagesCountPerSecond = 30
+
+// Controller interface describes TelegramController methods for tests
+type Controller interface {
+	Init()
+	Send(msg tgbotapi.Chattable)
+	Run()
+}
+
+// BotAPI interface is made to have an opportunity of mocking tgbotapi.BotAPI
+type BotAPI interface {
+	Send(msg tgbotapi.Chattable) (tgbotapi.Message, error)
+}
 
 // TelegramController controls request sending to
 // prevent against exceeding Telegram limits
 type TelegramController struct {
-	Bot          *tgbotapi.BotAPI
+	Bot          BotAPI
 	messages     chan tgbotapi.Chattable
 	sentMessages []time.Time
 }
