@@ -5,4 +5,5 @@ const (
 	GetCommand           = "/get"
 	GetListCommand       = "/getlist"
 	GetAllBinanceCommand = "/getbinance"
+	GetAllCommand        = "/getall"
 )

@@ -82,3 +82,8 @@ func GetBinancePairsList() tgbotapi.ReplyKeyboardMarkup {
 func GetAllPrices() tgbotapi.ReplyKeyboardMarkup {
 	return Menu()
 }
+
+// GetAllBinancePrices returns reply keyboard for `GetAllBinancePrices` message
+func GetAllBinancePrices() tgbotapi.ReplyKeyboardMarkup {
+	return GetAllPrices()
+}

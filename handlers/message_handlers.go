@@ -4,6 +4,8 @@ package handlers
 import (
 	"bytes"
 	"fmt"
+	"log"
+	"reflect"
 	"strings"
 	"time"
 
@@ -40,6 +42,13 @@ func NewMessageDispatcher(
 
 // DispatchMessage identifies type of message and sends response based on this type
 func (d *MessageDispatcher) Dispatch(update *tgbotapi.Update) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println(r)
+			d.logger.Error(fmt.Sprintf("Panic! Cannot dispatch message\n%v\nfrom %v\n\n%v",
+				update.Message.Text, update.Message.Chat.ID, r))
+		}
+	}()
 	text := strings.TrimSpace(update.Message.Text)
 
 	switch true {
@@ -58,6 +67,10 @@ func (d *MessageDispatcher) Dispatch(update *tgbotapi.Update) {
 	// GetAllBinancePrices
 	case strings.HasPrefix(text, label.GetAllBinanceCommand):
 		d.controller.Send(d.handleGetAllBinancePrices(update))
+
+	// GetAllPrices
+	case strings.HasPrefix(text, label.GetAllCommand) || strings.HasPrefix(text, button.GetAllPrices.Text):
+		d.controller.Send(d.handleGetAllPrices(update))
 
 	// GetList
 	case strings.HasPrefix(text, label.GetListCommand):
@@ -147,10 +160,10 @@ func (d *MessageDispatcher) handleGetCorrection(update *tgbotapi.Update) tgbotap
 	return &msg
 }
 
-// handleGetAllPrices return message with .xls document
-// that contains all tickers information
+// handleGetAllBinancePrices return message with .xls document
+// that contains all Binance tickers information
 func (d *MessageDispatcher) handleGetAllBinancePrices(update *tgbotapi.Update) tgbotapi.Chattable {
-	d.logger.Info(fmt.Sprintf("%s asked for all prices", helper.GetTelegramProfileURL(update)))
+	d.logger.Info(fmt.Sprintf("%s asked for all binance prices", helper.GetTelegramProfileURL(update)))
 
 	prices, err := d.binance.GetAllPrices()
 	if err != nil {
@@ -182,9 +195,58 @@ func (d *MessageDispatcher) handleGetAllBinancePrices(update *tgbotapi.Update) t
 	}
 
 	// Preparing message
-	msg := tgbotapi.NewDocumentUpload(update.Message.Chat.ID, tgbotapi.FileBytes{Name: "Prices.xlsx", Bytes: buffer.Bytes()})
+	msg := tgbotapi.NewDocumentUpload(update.Message.Chat.ID, tgbotapi.FileBytes{Name: "Binance.xlsx", Bytes: buffer.Bytes()})
 	msg.FileSize = len(buffer.Bytes())
 	msg.Caption = label.GetAllBinancePrices
+	msg.ReplyMarkup = keyboard.GetAllBinancePrices()
+	helper.PrepareMessage(&msg)
+
+	d.logger.Info(fmt.Sprintf("Sending message with all Binance prices to %s", helper.GetTelegramProfileURL(update)))
+
+	return &msg
+}
+
+// handleGetAllPrices return message with .xls document
+// that contains all tickers information
+func (d *MessageDispatcher) handleGetAllPrices(update *tgbotapi.Update) tgbotapi.Chattable {
+	d.logger.Info(fmt.Sprintf("%s asked for all prices", helper.GetTelegramProfileURL(update)))
+
+	prices, err := api.GetRates()
+	if err != nil {
+		d.logger.Error(fmt.Sprintf("Cannot get all prices: %s", err))
+		return tgbotapi.NewMessage(update.Message.Chat.ID, label.GetAllPricesFailed)
+	}
+
+	// Creating xlsx table
+	file := xlsx.NewFile()
+	sheet, err := file.AddSheet("Prices")
+	if err != nil {
+		d.logger.Error(fmt.Sprintf("Cannot add sheet to the prices table: %s", err))
+		return tgbotapi.NewMessage(update.Message.Chat.ID, label.GetAllPricesFailed)
+	}
+
+	header := sheet.AddRow()
+	val := reflect.ValueOf(&api.Rate{}).Elem()
+
+	for i := 0; i < val.NumField(); i++ {
+		header.AddCell().Value = val.Type().Field(i).Name
+	}
+
+	for _, price := range prices {
+		sheet.AddRow().WriteStruct(&price, val.NumField())
+	}
+
+	var buffer bytes.Buffer
+	err = file.Write(&buffer)
+	if err != nil {
+		d.logger.Error(fmt.Sprintf("Cannot save XLSX table with all prices: %s", err))
+		return tgbotapi.NewMessage(update.Message.Chat.ID, label.GetAllPricesFailed)
+	}
+
+	// Preparing message
+	msg := tgbotapi.NewDocumentUpload(update.Message.Chat.ID, tgbotapi.FileBytes{Name: "Prices.xlsx", Bytes: buffer.Bytes()})
+	msg.FileSize = len(buffer.Bytes())
+	msg.Caption = label.GetAllPrices
 	msg.ReplyMarkup = keyboard.GetAllPrices()
 	helper.PrepareMessage(&msg)
 
