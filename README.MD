@@ -7,7 +7,7 @@ This is a Telegram bot that provides with relevant information about crypto curr
 
 ## Stack
 
-Heroku is used to start bot in docker. Chosen CI is Travis.
+Heroku is used to deploy the bot in docker. Chosen CI is Travis.
 
 ## How to run it
 
@@ -20,7 +20,9 @@ First of all, you should initialize environment variables:
 | BINANCE_API_KEY       | Binance API key      |
 | BINANCE_SECRET_KEY       | Binance secret key (can be obtained in Binance settings)      |
 
-The next thing to do is adding supported Binance currency pairs in `config.go` file:
+`BINANCE_API_KEY` and `BINANCE_SECRET_KEY` are optional (the application will work even without them).
+
+The next thing to do is adding supported Binance currency pairs into `config.go`:
 
 ```go
 BinancePairs = []model.Pair{
@@ -32,6 +34,8 @@ BinancePairs = []model.Pair{
     {"ETC", "BTC"},
 }
 ```
+
+Now you can run the application with `go run main.go` or from Dockerfile.
 
 ## How to try it
 

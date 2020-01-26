@@ -55,9 +55,9 @@ func (d *MessageDispatcher) Dispatch(update *tgbotapi.Update) {
 	case strings.HasPrefix(text, button.GetBinancePricesList.Text):
 		d.controller.Send(d.handleGetBinancePairsList(update))
 
-	// GetAllPrices
-	case strings.HasPrefix(text, button.GetAllPrices.Text) || strings.HasPrefix(text, label.GetAllCommand):
-		d.controller.Send(d.handleGetAllPrices(update))
+	// GetAllBinancePrices
+	case strings.HasPrefix(text, label.GetAllBinanceCommand):
+		d.controller.Send(d.handleGetAllBinancePrices(update))
 
 	// GetList
 	case strings.HasPrefix(text, label.GetListCommand):
@@ -149,13 +149,13 @@ func (d *MessageDispatcher) handleGetCorrection(update *tgbotapi.Update) tgbotap
 
 // handleGetAllPrices return message with .xls document
 // that contains all tickers information
-func (d *MessageDispatcher) handleGetAllPrices(update *tgbotapi.Update) tgbotapi.Chattable {
+func (d *MessageDispatcher) handleGetAllBinancePrices(update *tgbotapi.Update) tgbotapi.Chattable {
 	d.logger.Info(fmt.Sprintf("%s asked for all prices", helper.GetTelegramProfileURL(update)))
 
 	prices, err := d.binance.GetAllPrices()
 	if err != nil {
 		d.logger.Error(fmt.Sprintf("Cannot get all Binance prices: %s", err))
-		return tgbotapi.NewMessage(update.Message.Chat.ID, label.GetAllPricesFailed)
+		return tgbotapi.NewMessage(update.Message.Chat.ID, label.GetAllBinancePricesFailed)
 	}
 
 	// Creating xlsx table
@@ -163,7 +163,7 @@ func (d *MessageDispatcher) handleGetAllPrices(update *tgbotapi.Update) tgbotapi
 	sheet, err := file.AddSheet("Binance")
 	if err != nil {
 		d.logger.Error(fmt.Sprintf("Cannot add sheet to the Binance prices table: %s", err))
-		return tgbotapi.NewMessage(update.Message.Chat.ID, label.GetAllPricesFailed)
+		return tgbotapi.NewMessage(update.Message.Chat.ID, label.GetAllBinancePricesFailed)
 	}
 
 	header := sheet.AddRow()
@@ -178,13 +178,13 @@ func (d *MessageDispatcher) handleGetAllPrices(update *tgbotapi.Update) tgbotapi
 	err = file.Write(&buffer)
 	if err != nil {
 		d.logger.Error(fmt.Sprintf("Cannot save XLSX table with Binance prices: %s", err))
-		return tgbotapi.NewMessage(update.Message.Chat.ID, label.GetAllPricesFailed)
+		return tgbotapi.NewMessage(update.Message.Chat.ID, label.GetAllBinancePricesFailed)
 	}
 
 	// Preparing message
 	msg := tgbotapi.NewDocumentUpload(update.Message.Chat.ID, tgbotapi.FileBytes{Name: "Prices.xlsx", Bytes: buffer.Bytes()})
 	msg.FileSize = len(buffer.Bytes())
-	msg.Caption = label.GetAllPrices
+	msg.Caption = label.GetAllBinancePrices
 	msg.ReplyMarkup = keyboard.GetAllPrices()
 	helper.PrepareMessage(&msg)
 

@@ -9,7 +9,6 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/lodthe/cpparserbot/api"
-	"github.com/lodthe/cpparserbot/button"
 	"github.com/lodthe/cpparserbot/config"
 	"github.com/lodthe/cpparserbot/helper"
 	"github.com/lodthe/cpparserbot/label"
@@ -152,10 +151,8 @@ func TestGetPrice(t *testing.T) {
 
 func TestGetAllPrices(t *testing.T) {
 	in := []*tgbotapi.Update{
-		NewUpdate(-1, label.GetAllCommand),
-		NewUpdate(1, label.GetAllCommand),
-		NewUpdate(1, button.GetAllPrices.Text),
-		NewUpdate(-1, button.GetAllPrices.Text),
+		NewUpdate(-1, label.GetAllBinanceCommand),
+		NewUpdate(1, label.GetAllBinanceCommand),
 	}
 
 	controller, dispatcher := NewControllerAndDispatcher()

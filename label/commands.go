@@ -2,7 +2,7 @@
 package label
 
 const (
-	GetCommand     = "/get"
-	GetListCommand = "/getlist"
-	GetAllCommand  = "/getall"
+	GetCommand           = "/get"
+	GetListCommand       = "/getlist"
+	GetAllBinanceCommand = "/getbinance"
 )

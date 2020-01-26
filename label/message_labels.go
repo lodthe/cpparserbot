@@ -16,9 +16,9 @@ const (
 `
 	GetBinancePairsList = `Выберите интересующую Вас пару из списка или отправьте сообщение в таком же формате.
 `
-	GetAllPrices = `Документ с последней информацией о всех курсах.
+	GetAllBinancePrices = `Документ с последней информацией о курсах с Binance.
 `
-	GetAllPricesFailed = `Произошла ошибка :( Попробуйте позже.
+	GetAllBinancePricesFailed = `Произошла ошибка :( Попробуйте позже.
 `
 	UnknownCommand = `Неизвестная команда :( Попробуйте позже.
 ` + CommandList
