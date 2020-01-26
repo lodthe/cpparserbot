@@ -9,6 +9,7 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/lodthe/cpparserbot/api"
+	"github.com/lodthe/cpparserbot/button"
 	"github.com/lodthe/cpparserbot/config"
 	"github.com/lodthe/cpparserbot/helper"
 	"github.com/lodthe/cpparserbot/label"
@@ -149,10 +150,36 @@ func TestGetPrice(t *testing.T) {
 	}
 }
 
-func TestGetAllPrices(t *testing.T) {
+func TestGetAllBinancePrices(t *testing.T) {
 	in := []*tgbotapi.Update{
 		NewUpdate(-1, label.GetAllBinanceCommand),
 		NewUpdate(1, label.GetAllBinanceCommand),
+	}
+
+	controller, dispatcher := NewControllerAndDispatcher()
+
+	for _, u := range in {
+		dispatcher.Dispatch(u)
+	}
+
+	for i := range in {
+		keyboard := controller.Messages[i].Keyboard
+		if (keyboard != nil) != (helper.GetChatID(in[i]) > 0) {
+			t.Errorf("Expected chat existance status %v, got %v: %v", helper.GetChatID(in[i]) >= 0, keyboard != nil, keyboard)
+		}
+
+		if controller.Messages[i].FileSize == 0 {
+			t.Errorf("Expected document, got file size == 0: %v", controller.Messages[i])
+		}
+	}
+}
+
+func TestGetAllPrices(t *testing.T) {
+	in := []*tgbotapi.Update{
+		NewUpdate(-1, label.GetAllCommand),
+		NewUpdate(1, label.GetAllCommand),
+		NewUpdate(-1, button.GetAllPrices.Text),
+		NewUpdate(1, button.GetAllPrices.Text),
 	}
 
 	controller, dispatcher := NewControllerAndDispatcher()
