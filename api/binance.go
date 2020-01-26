@@ -54,6 +54,7 @@ func (b *Binance) GetKlines(pair *model.Pair) ([]Kline, error) {
 
 	var result []Kline
 
+	// Extracting data from response
 	for _, i := range klines {
 		price, err := strconv.ParseFloat(i.Close, 64)
 		if err != nil {

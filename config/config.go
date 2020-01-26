@@ -4,6 +4,7 @@ package config
 import "github.com/lodthe/cpparserbot/model"
 
 var (
+	// Supported Binance pairs
 	BinancePairs = []model.Pair{
 		{"BTC", "USDT"},
 		{"BNB", "BTC"},

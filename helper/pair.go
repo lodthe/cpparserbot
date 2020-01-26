@@ -14,7 +14,7 @@ func init() {
 	binancePairs = config.BinancePairs
 }
 
-// findPairInConfig checks if `s` occurs in Binance pairs defined in config
+// findPairInConfig checks whether `s` occurs in Binance pairs defined in config
 func FindPairInConfig(s string) *model.Pair {
 	for _, pair := range binancePairs {
 		if strings.EqualFold(s, pair.String()) {

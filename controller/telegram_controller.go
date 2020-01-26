@@ -48,11 +48,13 @@ func (controller *TelegramController) Send(msg tgbotapi.Chattable) {
 func (controller *TelegramController) Run() {
 	go func(controller *TelegramController) {
 		for {
+			// Removing messages, sent more than 1 second ago, from the queue
 			for (len(controller.sentMessages) != 0) && (time.Now().Sub(controller.sentMessages[0]) > time.Second) {
 				controller.sentMessages = controller.sentMessages[1:]
 			}
 
 			if len(controller.sentMessages) < maxMessagesCountPerSecond {
+				// Sending message
 				go func(c tgbotapi.Chattable) {
 					controller.Bot.Send(c)
 				}(<-controller.messages)

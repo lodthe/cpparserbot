@@ -7,9 +7,10 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-// PrepareMessage disables web page preview,
-// sets parse mode to Markdown and removes keyboard
-// in group chats
+// PrepareMessage prepares message for sending:
+//  disables web page preview,
+//  sets parse mode to Markdown,
+//  removes keyboard in group chats
 func PrepareMessage(config tgbotapi.Chattable) tgbotapi.Chattable {
 	switch config.(type) {
 	case *tgbotapi.MessageConfig:

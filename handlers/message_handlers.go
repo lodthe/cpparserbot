@@ -158,6 +158,7 @@ func (d *MessageDispatcher) handleGetAllPrices(update *tgbotapi.Update) tgbotapi
 		return tgbotapi.NewMessage(update.Message.Chat.ID, label.GetAllPricesFailed)
 	}
 
+	// Creating xlsx table
 	file := xlsx.NewFile()
 	sheet, err := file.AddSheet("Binance")
 	if err != nil {
@@ -180,6 +181,7 @@ func (d *MessageDispatcher) handleGetAllPrices(update *tgbotapi.Update) tgbotapi
 		return tgbotapi.NewMessage(update.Message.Chat.ID, label.GetAllPricesFailed)
 	}
 
+	// Preparing message
 	msg := tgbotapi.NewDocumentUpload(update.Message.Chat.ID, tgbotapi.FileBytes{Name: "Prices.xlsx", Bytes: buffer.Bytes()})
 	msg.FileSize = len(buffer.Bytes())
 	msg.Caption = label.GetAllPrices
@@ -197,12 +199,14 @@ func (d *MessageDispatcher) handleGetBinancePrice(pair *model.Pair, update *tgbo
 	profileRepr := helper.GetTelegramProfileURL(update)
 	d.logger.Info(fmt.Sprintf("%s asked for %s Binance price", profileRepr, pair))
 
+	// Getting pair price
 	price, err := d.binance.GetPrice(pair)
 	if err != nil {
 		d.logger.Error(fmt.Sprintf("Cannot get Binance price for %s (%s): %s", pair, profileRepr, err))
 		return tgbotapi.NewMessage(update.Message.Chat.ID, label.GetBinancePriceFailed)
 	}
 
+	// Getting klines
 	klines, err := d.binance.GetKlines(pair)
 	if err != nil {
 		d.logger.Error(fmt.Sprintf("Cannot get Binance klines for %s (%s): %s", pair, profileRepr, err))
@@ -215,9 +219,11 @@ func (d *MessageDispatcher) handleGetBinancePrice(pair *model.Pair, update *tgbo
 		y = append(y, i.Price)
 	}
 
+	// Creating chart with klines
 	graph := chart.Chart{
 		Title: fmt.Sprintf("Изменение цены %s за сутки", pair),
 		XAxis: chart.XAxis{
+			// Convert UNIX-time to user-readable format
 			ValueFormatter: func(v interface{}) string {
 				t := time.Unix(int64(v.(float64))/1000, 0)
 				return fmt.Sprintf("%02d:%02d", t.Hour(), t.Minute())
@@ -247,6 +253,7 @@ func (d *MessageDispatcher) handleGetBinancePrice(pair *model.Pair, update *tgbo
 		return tgbotapi.NewMessage(update.Message.Chat.ID, label.GetBinancePriceFailed)
 	}
 
+	// Preparing message
 	msg := tgbotapi.NewPhotoUpload(update.Message.Chat.ID, tgbotapi.FileBytes{Name: "Prices.png", Bytes: buffer.Bytes()})
 	msg.Caption = fmt.Sprintf(label.GetBinancePrice, pair, price)
 	msg.ReplyMarkup = keyboard.GetBinancePrice()
@@ -258,7 +265,7 @@ func (d *MessageDispatcher) handleGetBinancePrice(pair *model.Pair, update *tgbo
 }
 
 // handleCommandGetBinancePrice returns message with Binance pair price
-// and a graph (which shows how price was changing during the day)
+// and a graph (which shows how price was changing throughout the day)
 func (d *MessageDispatcher) handleCommandGetBinancePrice(update *tgbotapi.Update) tgbotapi.Chattable {
 	// Trimming text and removing `get` command prefix
 	pairName := strings.TrimSpace(update.Message.Text)[len(label.GetCommand)+1:]
