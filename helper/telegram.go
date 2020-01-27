@@ -43,7 +43,7 @@ func PrepareMessage(config tgbotapi.Chattable) tgbotapi.Chattable {
 
 // GetChatID tries to get chat ID from update object
 func GetChatID(update *tgbotapi.Update) int64 {
-	switch true {
+	switch {
 	case update.Message != nil:
 		return update.Message.Chat.ID
 	case update.CallbackQuery != nil:

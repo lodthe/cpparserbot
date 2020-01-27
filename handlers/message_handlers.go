@@ -51,7 +51,7 @@ func (d *MessageDispatcher) Dispatch(update *tgbotapi.Update) {
 	}()
 	text := strings.TrimSpace(update.Message.Text)
 
-	switch true {
+	switch {
 	// Start
 	case strings.HasPrefix(text, "/start"):
 		d.controller.Send(d.handleStart(update))
