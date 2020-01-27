@@ -2,6 +2,7 @@
 package controller
 
 import (
+	"log"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -56,7 +57,9 @@ func (controller *TelegramController) Run() {
 			if len(controller.sentMessages) < maxMessagesCountPerSecond {
 				// Sending message
 				go func(c tgbotapi.Chattable) {
-					controller.Bot.Send(c)
+					if _, err := controller.Bot.Send(c); err != nil {
+						log.Fatal(err)
+					}
 				}(<-controller.messages)
 
 				controller.sentMessages = append(controller.sentMessages, time.Now())
